@@ -3,15 +3,12 @@ import torch.nn.functional as F
 
 from utils.loss_fun import SSIM
 from utils.ssim_loss import SSIM_Loss
-from utils.metics import mAE, RMSE, R2
+
 
 
 def eval_net(model, data, factor, arg):
 	model.eval()
-	val_MSE = 0
 	val_loss = 0
-	val_Mae = 0
-	val_R2 = 0
 	step = 0
 	if arg.loss_function == 'L2':
 		criterion = torch.nn.MSELoss()
@@ -26,7 +23,7 @@ def eval_net(model, data, factor, arg):
 			step = step + 1
 			inputs = x.cuda()
 			labels = y.cuda()
-			if arg.model == 'TreeCountNet_cc' or arg.model == 'TreeCountNet_cu' or arg.model == 'TreeCountNet_fme' or arg.model == 'TreeCountNet_fme_new':
+			if arg.model == 'TreeCountNet' or 'TEDnet':
 				if arg.deepsupervision:
 					out1, out2, out3, outputs = model(inputs)
 					if arg.loss_function == 'SSIM':
@@ -72,10 +69,5 @@ def eval_net(model, data, factor, arg):
 			
 			# loss = torch.nn.SmoothL1Loss()(pre, y)
 			val_loss += float(loss)
-			acc_ = RMSE(outputs, y, factor)
-			val_MSE += float(acc_)
-			mae_ = mAE(outputs, y, factor)
-			val_Mae += float(mae_)
-			val_R = R2(outputs, y, factor)
-			val_R2 += float(val_R)
-	return val_loss / step, val_Mae / step, val_MSE / step, val_R2 / step
+			
+	return val_loss / step
